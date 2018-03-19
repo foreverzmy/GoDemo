@@ -7,6 +7,8 @@ import (
 )
 
 var mu sync.Mutex
+
+// Count 计数器
 var Count int
 
 // CountHadnler echoes the number of calls so far.

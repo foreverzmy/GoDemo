@@ -1,3 +1,4 @@
+// 返回 headers
 package main
 
 import (
@@ -6,6 +7,7 @@ import (
 	"net/http"
 )
 
+// HeaderHandle print headers to page
 func HeaderHandle(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "%s %s %s\n", r.Method, r.URL, r.Proto)
 
