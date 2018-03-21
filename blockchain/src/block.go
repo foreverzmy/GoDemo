@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-// Block 由区块头和交易两部分构成
+// Block 由区块头和交易两部分构成，表示区块链中的一个区块
 // Timestamp, PrevBlockHash, Hash 属于区块头（block header）
 type Block struct {
 	Timestamp     int64          // 当前时间戳，也就是区块创建的时间
@@ -16,33 +16,6 @@ type Block struct {
 	PrevBlockHash []byte         // 前一个块的哈希
 	Hash          []byte         // 当前块的哈希
 	Nonce         int            // 对工作量证明进行验证时用到
-}
-
-// Serialize 将 Block 序列化为一个字节数组
-func (b *Block) Serialize() []byte {
-	var result bytes.Buffer
-
-	encoder := gob.NewEncoder(&result)
-
-	err := encoder.Encode(b)
-	if err != nil {
-		log.Print(err)
-	}
-	return result.Bytes()
-}
-
-// DeserializeBlock 将字节数组反序列化为一个 Block
-func DeserializeBlock(d []byte) *Block {
-	var block Block
-
-	decoder := gob.NewDecoder(bytes.NewReader(d))
-
-	err := decoder.Decode(&block)
-	if err != nil {
-		log.Print(err)
-	}
-
-	return &block
 }
 
 // NewBlock 用于生成新块，参数需要 transactions 与 PrevBlockHash
@@ -76,10 +49,37 @@ func (b *Block) HashTransactions() []byte {
 	var txHash [32]byte
 
 	for _, tx := range b.Transactions {
-		txHashes = append(txHashes, tx.ID)
+		txHashes = append(txHashes, tx.Hash())
 	}
 
 	txHash = sha256.Sum256(bytes.Join(txHashes, []byte{}))
 
 	return txHash[:]
+}
+
+// Serialize 将 Block 序列化为一个字节数组
+func (b *Block) Serialize() []byte {
+	var result bytes.Buffer
+
+	encoder := gob.NewEncoder(&result)
+
+	err := encoder.Encode(b)
+	if err != nil {
+		log.Print(err)
+	}
+	return result.Bytes()
+}
+
+// DeserializeBlock 将字节数组反序列化为一个 Block
+func DeserializeBlock(d []byte) *Block {
+	var block Block
+
+	decoder := gob.NewDecoder(bytes.NewReader(d))
+
+	err := decoder.Decode(&block)
+	if err != nil {
+		log.Print(err)
+	}
+
+	return &block
 }

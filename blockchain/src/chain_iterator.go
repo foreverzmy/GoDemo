@@ -12,20 +12,15 @@ import (
 	bolt "github.com/coreos/bbolt"
 )
 
-// BlockChainIterator 区块链迭代器
+// BlockChainIterator is used to iterate over blockchain blocks
+// 区块链迭代器
 type BlockChainIterator struct {
 	currentHash []byte
 	db          *bolt.DB
 }
 
-// Iterator 迭代器，里面存储了当前迭代的块哈希（currentHash）和数据库的连接（db）
-func (bc *BlockChain) Iterator() *BlockChainIterator {
-	bci := &BlockChainIterator{bc.tip, bc.db}
-
-	return bci
-}
-
-// Next 返回链中的下一个块
+// Next returns next block starting from the tip
+// 返回链中的下一个块
 func (i *BlockChainIterator) Next() *Block {
 	var block *Block
 
