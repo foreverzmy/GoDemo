@@ -19,6 +19,10 @@ func (cli *CLI) send(from, to string, amount int) {
 	defer bc.db.Close()
 
 	tx := NewUTXOTransaction(from, to, amount, bc)
-	bc.MineBlock([]*Transaction{tx})
+	cbTx := NewCoinbaseTX(from, "")
+	txs := []*Transaction{cbTx, tx}
+
+	// 当挖出一个新块时，UTXO 集就会进行更新
+	newBlock := bc.MineBlock(txs)
 	fmt.Println("Success!")
 }

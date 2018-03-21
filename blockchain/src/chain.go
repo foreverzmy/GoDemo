@@ -152,13 +152,15 @@ func (bc *BlockChain) FindTransaction(ID []byte) (Transaction, error) {
 	return Transaction{}, errors.New("Transaction is not found")
 }
 
-// FindUnspentTransactions returns a list of transactions containing unspent outputs
-// 找到未花费输出的交易
-func (bc *BlockChain) FindUnspentTransactions(pubKeyHash []byte) []Transaction {
-	var unspentTXs []Transaction
+// FindUTXO finds all unspent transaction outputs and
+// returns transactions with spent outputs removed
+// 找到未花费输出
+func (bc *BlockChain) FindUTXO() map[string]TXOutputs {
+	UTXO := make(map[string]TXOutputs)
 	spentTXOs := make(map[string][]int)
 	bci := bc.Iterator()
-
+	// FindUnspentTransactions returns a list of transactions containing unspent outputs
+	// 找到未花费输出的交易
 	for {
 		block := bci.Next()
 
@@ -177,17 +179,15 @@ func (bc *BlockChain) FindUnspentTransactions(pubKeyHash []byte) []Transaction {
 				}
 
 				// 如果该交易输出可以被解锁，即可被花费
-				if out.IsLockedWithKey(pubKeyHash) {
-					unspentTXs = append(unspentTXs, *tx)
-				}
+				outs := UTXO[txID]
+				outs.Outputs = append(outs.Outputs, out)
+				UTXO[txID] = outs
 			}
 
 			if tx.IsCoinbase() == false {
 				for _, in := range tx.Vin {
-					if in.UsesKey(pubKeyHash) {
-						inTxID := hex.EncodeToString(in.Txid)
-						spentTXOs[inTxID] = append(spentTXOs[inTxID], in.Vout)
-					}
+					inTxID := hex.EncodeToString(in.Txid)
+					spentTXOs[inTxID] = append(spentTXOs[inTxID], in.Vout)
 				}
 			}
 		}
@@ -196,23 +196,8 @@ func (bc *BlockChain) FindUnspentTransactions(pubKeyHash []byte) []Transaction {
 			break
 		}
 	}
-	return unspentTXs
-}
 
-// FindUTXO 找到未花费输出
-func (bc *BlockChain) FindUTXO(pubKeyHash []byte) []TXOutput {
-	var UTXOs []TXOutput
-	unspentTransactions := bc.FindUnspentTransactions(pubKeyHash)
-
-	for _, tx := range unspentTransactions {
-		for _, out := range tx.Vout {
-			if out.IsLockedWithKey(pubKeyHash) {
-				UTXOs = append(UTXOs, out)
-			}
-		}
-	}
-
-	return UTXOs
+	return UTXO
 }
 
 // Iterator 迭代器，里面存储了当前迭代的块哈希（currentHash）和数据库的连接（db）
@@ -224,7 +209,7 @@ func (bc *BlockChain) Iterator() *BlockChainIterator {
 
 // MineBlock mines a new block with the provided transactions
 // 利用提供的交易挖掘新块
-func (bc *BlockChain) MineBlock(transactions []*Transaction) {
+func (bc *BlockChain) MineBlock(transactions []*Transaction) *Block {
 	var lastHash []byte
 
 	for _, tx := range transactions {
@@ -264,6 +249,8 @@ func (bc *BlockChain) MineBlock(transactions []*Transaction) {
 		return nil
 
 	})
+
+	return newBlock
 }
 
 // SignTransaction signs inputs of a Transaction
