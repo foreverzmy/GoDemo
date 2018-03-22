@@ -289,7 +289,7 @@ func (bc *BlockChain) MineBlock(transactions []*Transaction) *Block {
 	for _, tx := range transactions {
 		// TODO: ignore transaction if it's not valid
 		if bc.VerifyTransaction(tx) != true {
-			log.Panic("VerifyTransaction")
+			log.Panic("ERROR: Invalid transaction")
 		}
 	}
 
@@ -365,6 +365,7 @@ func (bc *BlockChain) VerifyTransaction(tx *Transaction) bool {
 		}
 		prevTXs[hex.EncodeToString(prevTX.ID)] = prevTX
 	}
+
 	return tx.Verify(prevTXs)
 }
 
