@@ -8,8 +8,8 @@ import (
 	"math/big"
 )
 
-// 挖矿难度值，这里表示哈希的前 24 位必须是 0
-const targetBits = 24
+// 挖矿难度值，这里表示哈希的前 16 位必须是 0
+const targetBits = 16
 
 // ProofOfWork 工作证明
 // 每个块的工作量都必须要证明，所有有个指向 Block 的指针

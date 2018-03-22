@@ -73,7 +73,7 @@ func CreateBlockChain(address string) *BlockChain {
 }
 
 // NewBlockChain 创建一个有创世块的链
-func NewBlockChain(address string) *BlockChain {
+func NewBlockChain() *BlockChain {
 	if dbExists() == false {
 		fmt.Println("No existing blockchain found. Create one first.")
 		os.Exit(1)
@@ -104,31 +104,6 @@ func NewBlockChain(address string) *BlockChain {
 	bc := BlockChain{tip, db}
 
 	return &bc
-}
-
-// FindSpendableOutputs 从 address 中找到至少 amount 的 UTXO
-func (bc *BlockChain) FindSpendableOutputs(pubKeyHash []byte, amount int) (int, map[string][]int) {
-	unspentOutputs := make(map[string][]int)
-	unspendTXs := bc.FindUnspentTransactions(pubKeyHash)
-	accumulated := 0
-
-Work:
-	for _, tx := range unspendTXs {
-		txID := hex.EncodeToString(tx.ID)
-
-		for outIdx, out := range tx.Vout {
-			if out.IsLockedWithKey(pubKeyHash) && accumulated < amount {
-				accumulated += out.Value
-				unspentOutputs[txID] = append(unspentOutputs[txID], outIdx)
-
-				if accumulated >= amount {
-					break Work
-				}
-
-			}
-		}
-	}
-	return accumulated, unspentOutputs
 }
 
 // FindTransaction finds a transaction by its ID
@@ -272,6 +247,10 @@ func (bc *BlockChain) SignTransaction(tx *Transaction, privKey ecdsa.PrivateKey)
 // VerifyTransaction verifies transaction input signatures
 // 对交易进行验证
 func (bc *BlockChain) VerifyTransaction(tx *Transaction) bool {
+	if tx.IsCoinbase() {
+		return true
+	}
+
 	prevTXs := make(map[string]Transaction)
 
 	for _, vin := range tx.Vin {

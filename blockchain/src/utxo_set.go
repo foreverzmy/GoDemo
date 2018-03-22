@@ -9,6 +9,7 @@ import (
 
 const utxoBucket = "chainstate"
 
+// UTXOSet represents UTXO set
 type UTXOSet struct {
 	BlockChain *BlockChain
 }
@@ -29,30 +30,55 @@ func (u UTXOSet) Reindex() {
 		}
 
 		_, err = tx.CreateBucket(bucketName)
+
 		if err != nil {
 			log.Panic(err)
 		}
+		return nil
+	})
+	if err != nil {
+		log.Panic(err)
+	}
 
-		UTXO := u.BlockChain.FindUTXO()
+	UTXO := u.BlockChain.FindUTXO()
 
-		err = db.Update(func(tx *bolt.Tx) error {
-			b := tx.Bucket(bucketName)
+	err = db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket(bucketName)
 
-			for txID, outs := range UTXO {
-				key, err := hex.DecodeString(txID)
-				if err != nil {
-					log.Panic(err)
-				}
-
-				err = b.Put(key, outs.Serialize())
-				if err != nil {
-					log.Panic(err)
-				}
+		for txID, outs := range UTXO {
+			key, err := hex.DecodeString(txID)
+			if err != nil {
+				log.Panic(err)
 			}
-		})
+
+			err = b.Put(key, outs.Serialize())
+			if err != nil {
+				log.Panic(err)
+			}
+		}
 		return nil
 	})
 
+}
+
+// CountTransactions returns the number of transactions in the UTXO set
+func (u UTXOSet) CountTransactions() int {
+	db := u.BlockChain.db
+	counter := 0
+
+	err := db.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(utxoBucket))
+		c := b.Cursor()
+
+		for k, _ := c.First(); k != nil; k, _ = c.Next() {
+			counter++
+		}
+		return nil
+	})
+	if err != nil {
+		log.Panic(err)
+	}
+	return counter
 }
 
 // FindSpendableOutputs finds and returns unspent outputs to reference in inputs
