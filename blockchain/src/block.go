@@ -15,17 +15,19 @@ type Block struct {
 	PrevBlockHash []byte         // 前一个块的哈希
 	Hash          []byte         // 当前块的哈希
 	Nonce         int            // 对工作量证明进行验证时用到
+	Height        int            // 节点的高度
 }
 
 // NewBlock 用于生成新块，参数需要 transactions 与 PrevBlockHash
 // 当前块的哈希会基于 transactions 和 PrevBlockHash 计算得到
-func NewBlock(transactions []*Transaction, prevBlockHash []byte) *Block {
+func NewBlock(transactions []*Transaction, prevBlockHash []byte, height int) *Block {
 	block := &Block{
 		Timestamp:     time.Now().Unix(),
 		Transactions:  transactions,
 		PrevBlockHash: prevBlockHash,
 		Hash:          []byte{},
 		Nonce:         0,
+		Height:        height,
 	}
 
 	pow := NewProofOfWork(block)
@@ -37,9 +39,10 @@ func NewBlock(transactions []*Transaction, prevBlockHash []byte) *Block {
 	return block
 }
 
-// NewGenesisBlock 生成创世块
+// NewGenesisBlock creates and returns genesis Block
+// 生成创世块
 func NewGenesisBlock(coinbase *Transaction) *Block {
-	return NewBlock([]*Transaction{coinbase}, []byte{})
+	return NewBlock([]*Transaction{coinbase}, []byte{}, 0)
 }
 
 // HashTransactions 计算区块里所有交易的哈希
