@@ -14,7 +14,7 @@ type Request struct {
 }
 
 // GetHTML 获取 html 页面
-func (r Request) GetHTML() string {
+func (r Request) GetHTML() []byte {
 	// proxy, err := url.Parse(r.proxy)
 	// Panic(err)
 
@@ -41,5 +41,5 @@ func (r Request) GetHTML() string {
 	body, err := ioutil.ReadAll(res.Body)
 	Panic(err)
 
-	return string(body)
+	return body
 }

@@ -36,3 +36,11 @@
 [[constraint]]
   branch = "master"
   name = "github.com/djimenez/iconv-go"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/guotie/gogb2312"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/opesun/goquery"

@@ -9,13 +9,23 @@
 
 [[projects]]
   branch = "master"
-  name = "github.com/djimenez/iconv-go"
+  name = "github.com/guotie/gogb2312"
   packages = ["."]
-  revision = "8960e66bd3dacbc8773962b40eb82fc18c63c127"
+  revision = "a052a05f3e7eee704c1da5c5498a5e5718a97b1f"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/opesun/goquery"
+  packages = [
+    ".",
+    "exp/html",
+    "exp/html/atom"
+  ]
+  revision = "0d77e43213cdea88ecac8dd5fbdf10890e373035"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "6298dea9d92c5e6cf501ab77e655225953e53428e393eee9273f5ead987ad3a3"
+  inputs-digest = "68dcd2284fbacc91aa15f077c60438cb06a271601680fb739a1b36c1f42712c7"
   solver-name = "gps-cdcl"
   solver-version = 1

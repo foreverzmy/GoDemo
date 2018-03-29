@@ -1,45 +1,45 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
-	"io/ioutil"
-	"log"
-	"net/http"
-	"net/url"
+	"regexp"
 
-	"github.com/djimenez/iconv-go"
+	"github.com/PuerkitoBio/goquery"
+	"github.com/guotie/gogb2312"
 )
 
 func main() {
-
-	// r := Request{
-	// 	URL: "http://www.23us.so/files/article/html/10/10839/3652687.html",
-	// 	Headers: map[string]string{
-	// 		"Host":       "www.23us.so",
-	// 		"User-Agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.186 Safari/537.36",
-	// 		"Accept":     "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
-	// 	},
-	// 	proxy: "http://127.0.0.1:80",
-	// }
-	data := make(url.Values)
-	data.Add("searchkey", "剑来")
-	data.Add("searchtype", "articlename")
-	data.Add("action", "login")
-	data.Add("submit", "&#160;搜&#160;&#160;索&#160;")
-
-	res, err := http.PostForm("http://www.biquge.vip/modules/article/search.php", data)
-
-	if err != nil {
-		log.Panic(err)
+	r := Request{
+		URL: "https://www.x23us.com/class/1_1.html",
+		Headers: map[string]string{
+			"User-Agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36",
+		},
 	}
 
-	defer res.Body.Close()
+	res := r.GetHTML()
 
-	body, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		log.Panic(err)
-	}
+	output, _, _, _ := gogb2312.ConvertGB2312(res)
 
-	body, err = iconv.ConvertString(string(body), "utf-8", "GB2312")
-	fmt.Printf(string(body))
+	doc, err := goquery.NewDocumentFromReader(bytes.NewReader(output))
+	Panic(err)
+
+	lists := doc.Find("table").Find("tr")
+
+	lists.Each(func(i int, el *goquery.Selection) {
+		bookName := el.Find("td").First().Find("a").Last().Text()
+		bookID, _ := el.Find("td").First().Find("a").First().Attr("href")
+
+		reBookID := regexp.MustCompile(`/(\d+)$`)
+
+		arr := reBookID.FindStringSubmatch(bookID)
+
+		if len(arr) == 2 {
+			bookID = arr[1]
+		}
+
+		fmt.Println(bookName, bookID)
+
+	})
+
 }
