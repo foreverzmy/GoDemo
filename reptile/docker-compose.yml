@@ -1,0 +1,15 @@
+version: "3.5"
+services:
+
+  golang:
+    build: .
+    restart: always
+    container_name: gorun
+    command: /bin/sh
+    volumes:
+      - type: bind
+        source: ./
+        target: /go/src/workspace
+    stdin_open: true
+    tty: true
+      
